@@ -9,7 +9,7 @@ include_directories(src/)
 add_executable(MinecraftMITM
                 src/main.cpp src/type/VarNumber.cpp src/network/Connection.cpp
                 src/network/ConnectionManager.cpp src/type/VarInt.cpp src/type/VarLong.cpp
-                src/type/PositionAndRotation.cpp src/type/Position.cpp)
+                src/type/PositionAndRotation.cpp src/type/Position.cpp src/network/ByteManipulation.cpp)
 
 
 Include(FetchContent)
@@ -24,5 +24,5 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests src/test.cpp src/type/VarNumber.cpp src/network/Connection.cpp
         src/network/ConnectionManager.cpp src/type/VarInt.cpp src/type/VarLong.cpp
-        src/type/PositionAndRotation.cpp src/type/Position.cpp)
+        src/type/PositionAndRotation.cpp src/type/Position.cpp src/network/ByteManipulation.cpp)
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)

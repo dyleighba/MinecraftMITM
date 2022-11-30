@@ -6,6 +6,9 @@
 #define MCPROXY_POSITION_H
 
 #include <vector>
+#include <span>
+#include <cstdio>
+#include <network/ByteManipulation.h>
 
 struct Position {
     double x;

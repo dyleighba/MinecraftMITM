@@ -12,7 +12,14 @@ bool isAproxEqual(double d1, double d2) {
 
 bool testPosition(Position testPos) {
     std::vector<unsigned char> generatedBytes = testPos.bytes();
+    if (generatedBytes.size() != 25) {
+        printf("Incorrect packet size: %zu", generatedBytes.size());
+        return false;
+    }
     Position readbackPos = Position::parse(generatedBytes);
+    printf("in: (%.2f, %.2f, %.2f, %s),  out: (%.2f, %.2f, %.2f, %s)",
+           testPos.x, testPos.y, testPos.z, testPos.onGround ? "True" : "False",
+           readbackPos.x, readbackPos.y, readbackPos.z, readbackPos.onGround ? "True" : "False");
     if (!isAproxEqual(testPos.x, readbackPos.x)) return false;
     if (!isAproxEqual(testPos.y, readbackPos.y)) return false;
     if (!isAproxEqual(testPos.z, readbackPos.z)) return false;
