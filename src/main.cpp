@@ -8,51 +8,6 @@
 
 #define PRINT_PACKETS true
 
-Position parsePositionData(std::vector<unsigned char> positionData) {
-    std::reverse(positionData.begin(), positionData.end());
-    Position pos {
-            *(double*)(positionData.data()+17),
-            *(double*)(positionData.data()+9),
-            *(double*)(positionData.data()+1),
-            *(bool*)positionData.data()
-    };
-    return pos;
-}
-
-PositionAndRotation parsePositionAndRotationData(std::vector<unsigned char> positionData) {
-    std::reverse(positionData.begin(), positionData.end());
-    PositionAndRotation pos {
-            *(double*)(positionData.data()+25),
-            *(double*)(positionData.data()+17),
-            *(double*)(positionData.data()+9),
-            *(float*)(positionData.data()+5),
-            *(float*)(positionData.data()+1),
-             *(bool*)(positionData.data())
-    };
-    return pos;
-}
-
-Packet generatePositionPacket(Position pos) {
-    Packet newPacket{0x14, {}};
-    double altY = pos.y-0.01;
-    unsigned char* pointers[3] {
-        (unsigned char*)&pos.x,
-        (unsigned char*)&altY,
-        (unsigned char*)&pos.z
-    };
-    unsigned char rawPacketData[(sizeof(double)*3)+1]{};
-    for (int n = 0; n < 3; ++n) {
-        for (int i = 0; i < 8; ++i) {
-            rawPacketData[(n*8)+i] = pointers[n][i];
-            //newPacket.data.push_back(pointers[n][i]);
-        }
-    }
-    rawPacketData[(sizeof(double)*3)] = 0x00;
-    //newPacket.data.push_back(0x00);
-    std::vector<unsigned char> bytes(rawPacketData, (rawPacketData)+(sizeof(double)*3)+1);
-    newPacket.data = bytes;
-    return newPacket;
-}
 
 int main() {
     bool flyFixEnabled = false;
@@ -77,8 +32,8 @@ int main() {
         Packet clientToServer = clientConn.receivePacket();
         if (clientToServer.id != -1) {
             bool sendPacket = true;
-            Position pos;
-            PositionAndRotation posAndRot;
+            Position pos{};
+            PositionAndRotation posAndRot{};
             switch (clientToServer.id) {
                 case 0x1C: // Player abilities
                     printf("[c2s] Player Abilities (Flying: %s) DROPPED\n", (clientToServer.data[0] == 0x2) ? "true" : "false");
@@ -86,12 +41,12 @@ int main() {
                     break;
                 case 0x14: // Set Player Position
                     //printf("[c2s] Set Player Position\n");
-                    pos = parsePositionData(clientToServer.data);
+                    pos = Position::parse(clientToServer.data);
                     lastPlayerPos = {pos.x, pos.y, pos.z};
                     break;
                 case 0x15: // Set Player Position and Rotation
                     //printf("[c2s] Set Player Position and Rotation\n");
-                    posAndRot = parsePositionAndRotationData(clientToServer.data);
+                    posAndRot = PositionAndRotation::parse(clientToServer.data);
                     lastPlayerPos = {posAndRot.x, posAndRot.y, posAndRot.z};
                     break;
             }
@@ -115,7 +70,7 @@ int main() {
                     Packet packet{0x31};
                     packet.data.push_back(0x04);
                     float flyingSpeed = 0.1;
-                    unsigned char *flyingSpeedBytes = (unsigned char*)&flyingSpeed;
+                    auto flyingSpeedBytes = (unsigned char*)&flyingSpeed;
                     packet.data.push_back(flyingSpeedBytes[3]);
                     packet.data.push_back(flyingSpeedBytes[2]);
                     packet.data.push_back(flyingSpeedBytes[1]);
@@ -131,7 +86,10 @@ int main() {
                 clientConn.sendPacket(serverToClient);
             }
             if (flyFixEnabled && !lastPlayerPos.onGround) {
-                Packet p = generatePositionPacket(lastPlayerPos);
+                Packet p = {
+                        0x14,
+                        lastPlayerPos.bytes()
+                };
                 serverConn.sendPacket(p);
             }
             //printf("[s2c] [%zu]\n", serverToClient.data.size());
