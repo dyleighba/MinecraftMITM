@@ -5,12 +5,17 @@
 #include "type/VarLong.h"
 #include "type/Position.h"
 #include "type/PositionAndRotation.h"
+#include <chrono>
 
 #define PRINT_PACKETS true
 
+int64_t getTime() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
 int main() {
     bool flyFixEnabled = false;
+    int64_t lastFlyFixPacketTime = getTime();
     ConnectionManager connectionManager = ConnectionManager();
     printf("Waiting for client connection..\n");
     Connection clientConn = connectionManager.waitForClientConnection("127.0.0.1", "25565");
@@ -38,6 +43,7 @@ int main() {
                 case 0x1C: // Player abilities
                     printf("[c2s] Player Abilities (Flying: %s) DROPPED\n", (clientToServer.data[0] == 0x2) ? "true" : "false");
                     sendPacket = false;
+                    flyFixEnabled = clientToServer.data[0] == 0x2;
                     break;
                 case 0x14: // Set Player Position
                     //printf("[c2s] Set Player Position\n");
@@ -50,7 +56,7 @@ int main() {
                     lastPlayerPos = {posAndRot.x, posAndRot.y, posAndRot.z};
                     break;
             }
-            printf("Position: x: %.1f, y: %.1f, z: %.1f\n", lastPlayerPos.x, lastPlayerPos.y, lastPlayerPos.z);
+            //printf("Position: x: %.1f, y: %.1f, z: %.1f\n", lastPlayerPos.x, lastPlayerPos.y, lastPlayerPos.z);
             if (sendPacket) {
                 serverConn.sendPacket(clientToServer);
             }
@@ -62,7 +68,6 @@ int main() {
             switch (serverToClient.id) {
                 case 0x25:
                     printf("[s2c] Login (play)\n");
-                    flyFixEnabled = true;
                     break;
                 case 0x31:
                     printf("[s2c] Player Abilities\n");
@@ -85,12 +90,16 @@ int main() {
             if (sendPacket) {
                 clientConn.sendPacket(serverToClient);
             }
-            if (flyFixEnabled && !lastPlayerPos.onGround) {
+            int64_t currentTime = getTime();
+            if (flyFixEnabled && currentTime - lastFlyFixPacketTime > 2000 && !lastPlayerPos.onGround) {
+                lastFlyFixPacketTime = currentTime;
+                Position fakePos{lastPlayerPos.x, lastPlayerPos.y-0.1, lastPlayerPos.z, lastPlayerPos.onGround};
                 Packet p = {
                         0x14,
-                        lastPlayerPos.bytes()
+                        fakePos.bytes()
                 };
                 serverConn.sendPacket(p);
+                printf("Send fly fix packet %lld\n", currentTime - lastFlyFixPacketTime);
             }
             //printf("[s2c] [%zu]\n", serverToClient.data.size());
         }

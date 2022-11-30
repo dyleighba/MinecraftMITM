@@ -16,6 +16,7 @@ std::vector<unsigned char> Position::bytes() {
     posBytes.reserve(arrSize);
     std::span finalArrSpan(finalArr, arrSize);
     posBytes.insert(posBytes.begin(), finalArrSpan.begin(), finalArrSpan.end());
+    free(doubleArr);
     return posBytes;
 }
 
