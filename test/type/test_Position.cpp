@@ -6,10 +6,6 @@
 #include <type/Position.h>
 #include <network/Packet.h>
 
-bool isAproxEqual(double d1, double d2) {
-    return abs(d1 - d2) < 0.1;
-}
-
 bool testPositionClass(Position testPos) {
     std::vector<unsigned char> generatedBytes = testPos.bytes();
     if (generatedBytes.size() != 25) {
