@@ -21,3 +21,17 @@ PositionAndRotation PositionAndRotation::parse(std::vector<unsigned char> byteAr
     };
     return pos;
 }
+
+Position PositionAndRotation::position() {
+    return Position{this->x, this->y, this->z, this->onGround};
+}
+
+bool PositionAndRotation::operator==(const PositionAndRotation &rhs) const {
+    if (std::abs(this->x - rhs.x) > 0.1) return false;
+    if (std::abs(this->x - rhs.x) > 0.1) return false;
+    if (std::abs(this->x - rhs.x) > 0.1) return false;
+    if (std::abs(this->yaw - rhs.yaw) > 0.1) return false;
+    if (std::abs(this->pitch - rhs.pitch) > 0.1) return false;
+    if (this->onGround != rhs.onGround) return false;
+    return true;
+}

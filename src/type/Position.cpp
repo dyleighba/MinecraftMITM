@@ -30,3 +30,11 @@ std::vector<unsigned char> Position::bytes() {
     };
     return pos;
 }
+
+bool Position::operator==(const Position &rhs) const {
+    if (std::abs(this->x - rhs.x) > 0.1) return false;
+    if (std::abs(this->x - rhs.x) > 0.1) return false;
+    if (std::abs(this->x - rhs.x) > 0.1) return false;
+    if (this->onGround != rhs.onGround) return false;
+    return true;
+}

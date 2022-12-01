@@ -17,10 +17,7 @@ bool testPositionClass(Position testPos) {
         return false;
     }
     Position readbackPos = Position::parse(generatedBytes);
-    if (!isAproxEqual(testPos.x, readbackPos.x)) return false;
-    if (!isAproxEqual(testPos.y, readbackPos.y)) return false;
-    if (!isAproxEqual(testPos.z, readbackPos.z)) return false;
-    return testPos.onGround == readbackPos.onGround;
+    return testPos == readbackPos;
 }
 TEST_CASE( "Position packet creation") {
     double x = GENERATE(-63497.4, 2.3, -53.95, 2466);
