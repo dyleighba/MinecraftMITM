@@ -26,5 +26,5 @@ add_library(MinecraftProtocol
 add_executable(MinecraftMITM src/main.cpp)
 target_link_libraries(MinecraftMITM PRIVATE MinecraftProtocol)
 
-add_executable(tests src/test.cpp)
+add_executable(tests test/type/test_Position.cpp)
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain MinecraftProtocol)
