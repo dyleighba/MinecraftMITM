@@ -12,11 +12,12 @@
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <stdexcept>
 #include <string>
-#include "Connection.h"
+#include <network/Connection.h>
+#include <network/NetworkAddress.h>
 
 class ConnectionManager {
 private:
@@ -27,8 +28,8 @@ private:
 public:
     ConnectionManager();
     ~ConnectionManager();
-    Connection connectToServer(PCSTR host, PCSTR port);
-    Connection waitForClientConnection(PCSTR bindAddr, PCSTR bindPort);
+    Connection connectToServer(NetworkAddress serverAddr);
+    Connection waitForClientConnection(NetworkAddress bindAddr);
 };
 
 

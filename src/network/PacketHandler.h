@@ -24,6 +24,7 @@ public:
     bool removePacketListener(void(*callable)(Packet), int packetId);
     void processNextIncomingPacket();
     void sendPacket(Packet packet);
+    Packet receivePacket();
     static Packet unpackPacket(std::vector<unsigned char> packetBytes);
 
 };

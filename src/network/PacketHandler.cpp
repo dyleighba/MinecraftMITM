@@ -9,6 +9,7 @@ PacketHandler::PacketHandler(Connection * connection) {
 }
 
 bool PacketHandler::registerPacketListener(void(*callable)(Packet), int packetId) {
+    if (packetId < -1) return false;
     if (!callbacks.contains(packetId)) {
         callbacks[packetId] = std::set<void(*)(Packet)>{};
     }
@@ -28,12 +29,10 @@ bool PacketHandler::removePacketListener(void(*callable)(Packet), int packetId) 
 }
 
 void PacketHandler::processNextIncomingPacket() {
-    // this is from Connection::receivePacket()
-    int length = connection->getNextPacketLength();
-    if (length <= 0) return;
-    int varIntLength = static_cast<int>(VarInt::toBytes(length).size());
-    std::vector<unsigned char> rawPacket = connection->receiveRawData(length+varIntLength, false);
-    alertPacketListeners(unpackPacket(rawPacket));
+    Packet packet = receivePacket();
+    if (packet.data.empty()) return;
+    if (packet.id <= 0) return;
+    alertPacketListeners(packet);
 }
 
 void PacketHandler::sendPacket(Packet packet) {
@@ -75,7 +74,17 @@ void PacketHandler::alertPacketListeners(Packet packet) {
         callbackPacketId = -1;
     };
     if (callbacks[callbackPacketId].empty()) return;
-    for (void(*cb)(Packet) : callbacks[callbackPacketId]) {
-        cb(packet);
+    for (void(*func)(Packet) : callbacks[callbackPacketId]) {
+        func(packet);
     }
+}
+
+Packet PacketHandler::receivePacket() {
+    Packet packet = {-1};
+    // this is from Connection::receivePacket()
+    int length = connection->getNextPacketLength();
+    if (length <= 0) return packet;
+    int varIntLength = static_cast<int>(VarInt::toBytes(length).size());
+    std::vector<unsigned char> rawPacket = connection->receiveRawData(length+varIntLength, false);
+    return unpackPacket(rawPacket);
 }

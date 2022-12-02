@@ -38,7 +38,7 @@ ConnectionManager::~ConnectionManager() {
     cleanupWSA();
 }
 
-Connection ConnectionManager::connectToServer(PCSTR host, PCSTR port) {
+Connection ConnectionManager::connectToServer(NetworkAddress serverAddr) {
     Connection conn = Connection();
     struct addrinfo *result = NULL;
     struct addrinfo hints{};
@@ -47,7 +47,7 @@ Connection ConnectionManager::connectToServer(PCSTR host, PCSTR port) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    iResult = getaddrinfo( host, port, &hints, &result);
+    iResult = getaddrinfo(serverAddr.host.c_str(), std::to_string(serverAddr.port).c_str(), &hints, &result);
     if ( iResult != 0 ) {
         WSACleanup();
         throw std::runtime_error("getaddrinfo failed.");
@@ -61,10 +61,10 @@ Connection ConnectionManager::connectToServer(PCSTR host, PCSTR port) {
     }
     freeaddrinfo(result);
 
-    sockaddr_in clientService;
+    sockaddr_in clientService{};
     clientService.sin_family = AF_INET;
-    clientService.sin_addr.s_addr = inet_addr(host);
-    clientService.sin_port = htons(std::stoi(port));
+    clientService.sin_addr.s_addr = inet_addr(serverAddr.host.c_str());
+    clientService.sin_port = htons(serverAddr.port);
 
     //----------------------
     // Connect to server.
@@ -82,7 +82,7 @@ Connection ConnectionManager::connectToServer(PCSTR host, PCSTR port) {
     return conn;
 }
 
-Connection ConnectionManager::waitForClientConnection(PCSTR bindAddr, PCSTR bindPort) {
+Connection ConnectionManager::waitForClientConnection(NetworkAddress bindAddr) {
     struct addrinfo *result = nullptr;
     struct addrinfo hints{};
     int iResult;
@@ -92,7 +92,7 @@ Connection ConnectionManager::waitForClientConnection(PCSTR bindAddr, PCSTR bind
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_flags = AI_PASSIVE;
     // Resolve the server address and port
-    iResult = getaddrinfo( bindAddr, bindPort, &hints, &result);
+    iResult = getaddrinfo( bindAddr.host.c_str(), std::to_string(bindAddr.port).c_str(), &hints, &result);
     if ( iResult != 0 ) {
         WSACleanup();
         throw std::runtime_error("getaddrinfo failed.");
