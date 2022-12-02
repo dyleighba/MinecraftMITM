@@ -60,34 +60,6 @@ void Connection::sendRawData(std::vector<unsigned char> &data) {
     send(sock, (char *)data.data(), static_cast<int>(data.size()), 0);
 }
 
-Packet Connection::receivePacket() {
-    Packet packet{-1};
-    int length = getNextPacketLength();
-    if (length <= 0) return packet;
-    int varIntLength = VarInt::toBytes(length).size();
-    std::vector<unsigned char> rawPacket = receiveRawData(length+varIntLength, false);
-    if (rawPacket.empty()) { return packet; }
-    rawPacket.erase(rawPacket.begin(), rawPacket.begin()+varIntLength);
-    packet.id = VarInt::fromBytes(rawPacket);
-    int packetIdLength = VarInt::toBytes(packet.id).size();
-    rawPacket.erase(rawPacket.begin(), rawPacket.begin()+packetIdLength);
-    packet.data = rawPacket;
-    return packet;
-}
-
-void Connection::sendPacket(Packet &packet) {
-    std::vector<unsigned char> byteArr{};
-    byteArr.reserve(packet.data.size()+10);
-
-    std::vector<unsigned char> packetId = VarInt::toBytes(packet.id);
-    byteArr.insert(byteArr.end(), packetId.begin(), packetId.end());
-    byteArr.insert(byteArr.end(), packet.data.begin(), packet.data.end());
-
-    std::vector<unsigned char> packetSize = VarInt::toBytes(static_cast<int>(byteArr.size()));
-    byteArr.insert(byteArr.begin(), packetSize.begin(), packetSize.end());
-    sendRawData(byteArr);
-}
-
 bool Connection::isConnected() {
     return _isConnected;
 }

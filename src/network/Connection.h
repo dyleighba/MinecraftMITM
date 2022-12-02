@@ -34,8 +34,6 @@ public:
     void sendRawData(std::vector<unsigned char> &data);
     bool hasValidSocket() { return sock != INVALID_SOCKET; };
     int getNextPacketLength();
-    Packet receivePacket();
-    void sendPacket(Packet &packet);
     bool isConnected();
 };
 

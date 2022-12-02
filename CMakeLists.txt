@@ -20,7 +20,7 @@ include_directories(src/)
 add_library(MinecraftProtocol
         src/type/VarNumber.cpp src/network/Connection.cpp
         src/network/ConnectionManager.cpp src/type/VarInt.cpp src/type/VarLong.cpp
-        src/type/PositionAndRotation.cpp src/type/Position.cpp src/network/ByteManipulation.cpp)
+        src/type/PositionAndRotation.cpp src/type/Position.cpp src/network/ByteManipulation.cpp src/network/PacketHandler.cpp src/network/PacketHandler.h)
 
 
 add_executable(MinecraftMITM src/main.cpp)
