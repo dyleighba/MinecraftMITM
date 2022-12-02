@@ -69,9 +69,13 @@ Packet PacketHandler::unpackPacket(std::vector<unsigned char> packetBytes) {
 void PacketHandler::alertPacketListeners(Packet packet) {
     if (packet.id < 0) return;
     if (packet.data.empty()) return;
-    if (!callbacks.contains(packet.id)) return;
-    if (callbacks[packet.id].empty()) return;
-    for (void(*cb)(Packet) : callbacks[packet.id]) {
+    int callbackPacketId = packet.id;
+    if (!callbacks.contains(packet.id)) {
+        if (!callbacks.contains(-1)) return;
+        callbackPacketId = -1;
+    };
+    if (callbacks[callbackPacketId].empty()) return;
+    for (void(*cb)(Packet) : callbacks[callbackPacketId]) {
         cb(packet);
     }
 }
