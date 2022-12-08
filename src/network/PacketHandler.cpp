@@ -39,27 +39,27 @@ void PacketHandler::sendPacket(Packet packet) {
     std::vector<unsigned char> byteArr{};
     byteArr.reserve(packet.data.size()+10);
 
-    std::vector<unsigned char> packetId = VarInt::toBytes(packet.id);
+    std::vector<unsigned char> packetId = VarInt{packet.id}.bytes();
     byteArr.insert(byteArr.end(), packetId.begin(), packetId.end());
     byteArr.insert(byteArr.end(), packet.data.begin(), packet.data.end());
 
-    std::vector<unsigned char> packetSize = VarInt::toBytes(static_cast<int>(byteArr.size()));
+    std::vector<unsigned char> packetSize = VarInt{(static_cast<int>(byteArr.size()))}.bytes();
     byteArr.insert(byteArr.begin(), packetSize.begin(), packetSize.end());
     connection->sendRawData(byteArr);
 }
 
-Packet PacketHandler::unpackPacket(std::vector<unsigned char> packetBytes) {
+Packet PacketHandler::unpackPacket(const std::vector<unsigned char> & packetBytes) {
     Packet packet{-1};
-    int length = VarInt::fromBytes(packetBytes);
-    int varIntLength = static_cast<int>(VarInt::toBytes(length).size());
     if (packetBytes.empty()) { return packet; }
-    packetBytes.erase(packetBytes.begin(), packetBytes.begin()+varIntLength);
-    packet.id = VarInt::fromBytes(packetBytes);
-    int packetIdLength = static_cast<int>(VarInt::toBytes(packet.id).size());
-    packetBytes.erase(packetBytes.begin(), packetBytes.begin()+packetIdLength);
-    packet.data = packetBytes;
-    if (length != packet.data.size()) {
-        printf("Something went wrong! Invalid packet size"); // A test should be made to make sure its not a bug in code but rather input data
+    int length = VarInt::fromBytes(packetBytes);
+    int varIntLength = static_cast<int>(VarInt{length}.bytes().size());
+    std::vector<unsigned char> packetIdVec{packetBytes.begin()+varIntLength, packetBytes.end()}; // Lots of copy but no error on small packet
+    packet.id = VarInt::fromBytes(packetIdVec);
+    int packetIdLength = static_cast<int>(VarInt{packet.id}.bytes().size());
+    packet.data = std::vector<unsigned char>{packetBytes.begin()+varIntLength+packetIdLength, packetBytes.end()};
+    if (length-packetIdLength != (packet.data.size())) {
+        printf("Something went wrong! Invalid packet size (len: %i, size: %zu)\n", length-packetIdLength, packet.data.size());
+        // A test should be made to make sure its not a bug in code but rather input data
         // Or perhaps it should throw
     }
     return packet;
@@ -84,7 +84,7 @@ Packet PacketHandler::receivePacket() {
     // this is from Connection::receivePacket()
     int length = connection->getNextPacketLength();
     if (length <= 0) return packet;
-    int varIntLength = static_cast<int>(VarInt::toBytes(length).size());
+    int varIntLength = static_cast<int>(VarInt{length}.bytes().size());
     std::vector<unsigned char> rawPacket = connection->receiveRawData(length+varIntLength, false);
     return unpackPacket(rawPacket);
 }

@@ -9,6 +9,7 @@
 #include <span>
 #include <algorithm>
 
+float swapEndian(float value);
 double swapEndian(double value);
 
 #endif //MINECRAFTMITM_BYTEMANIPULATION_H

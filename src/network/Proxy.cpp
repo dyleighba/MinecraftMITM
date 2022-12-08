@@ -74,7 +74,7 @@ void Proxy::sendServerboundPacket(Packet packet) {
 
 void Proxy::processNextClientboundPacket() {
     Packet packet = server.receivePacket();
-    if (packet.id <= 0) return;
+    if (packet.id < 0) return;
     if (packet.data.empty()) return;
     if (runCallbacks(packet, clientboundCallbacks)) return;
     client.sendPacket(packet);
@@ -82,7 +82,7 @@ void Proxy::processNextClientboundPacket() {
 
 void Proxy::processNextServerboundPacket() {
     Packet packet = client.receivePacket();
-    if (packet.id <= 0) return;
+    if (packet.id < 0) return;
     if (packet.data.empty()) return;
     if (runCallbacks(packet, serverboundCallbacks)) return;
     server.sendPacket(packet);

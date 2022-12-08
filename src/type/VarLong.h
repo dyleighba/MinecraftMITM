@@ -13,9 +13,14 @@ class VarLong {
 private:
     const static int maxBits = 64;
 public:
-    static std::vector<unsigned char> toBytes(int value);
-    static int fromBytes(std::vector<unsigned char> byteArr);
+    [[nodiscard]] std::vector<unsigned char> bytes() const;
+    static VarLong fromBytes(const std::vector<unsigned char>& byteArr);
+    int value;
+    operator long() const { return value; };
 };
 
+inline VarLong operator+(const VarLong lhs, const VarLong & rhs) { return VarLong{lhs.value+rhs.value}; };
+inline VarLong operator+(const VarLong lhs, const int rhs) { return VarLong{lhs.value+rhs}; };
+inline long operator+(long lhs, const VarLong & rhs) { return lhs + rhs.value; };
 
 #endif //MCPROXY_VARLONG_H

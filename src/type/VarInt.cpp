@@ -4,11 +4,11 @@
 
 #include "VarInt.h"
 
-std::vector<unsigned char> VarInt::toBytes(int value) {
-    return VarNumber::toBytes(value, VarInt::maxBits);
+VarInt VarInt::fromBytes(const std::vector<unsigned char>& byteArr) {
+    if (byteArr.empty()) throw std::out_of_range("VarInt::fromBytes received an empty array");
+    return VarInt{VarNumber::fromBytes(byteArr, VarInt::maxBits)};
 }
 
-int VarInt::fromBytes(std::vector<unsigned char> byteArr) {
-    if (byteArr.empty()) throw std::out_of_range("VarInt::fromBytes received an empty array");
-    return VarNumber::fromBytes(byteArr, VarInt::maxBits);
+std::vector<unsigned char> VarInt::bytes() const {
+    return VarNumber::toBytes(value, VarInt::maxBits);
 }

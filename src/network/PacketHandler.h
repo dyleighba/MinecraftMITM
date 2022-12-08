@@ -25,7 +25,7 @@ public:
     void processNextIncomingPacket();
     void sendPacket(Packet packet);
     Packet receivePacket();
-    static Packet unpackPacket(std::vector<unsigned char> packetBytes);
+    static Packet unpackPacket(const std::vector<unsigned char> & packetBytes);
 
 };
 

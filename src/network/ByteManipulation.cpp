@@ -4,9 +4,20 @@
 
 #include "ByteManipulation.h"
 
+template<typename T>
+T swapEndianT(T value) {
+    union {
+        T value;
+        unsigned char bytes[sizeof(T)];
+    } data{value};
+    std::reverse(std::begin(data.bytes), std::end(data.bytes));
+    return data.value;
+}
+
 double swapEndian(double value) {
-    auto valueBytes = reinterpret_cast<unsigned char *>(&value);
-    std::span valueBytesSpan(valueBytes, sizeof(double));
-    std::reverse(valueBytesSpan.begin(), valueBytesSpan.end());
-    return *reinterpret_cast<double *>(valueBytesSpan.data());
+    return swapEndianT(value);
+}
+
+float swapEndian(float value) {
+    return swapEndianT(value);
 }

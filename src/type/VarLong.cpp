@@ -4,11 +4,11 @@
 
 #include "VarLong.h"
 
-std::vector<unsigned char> VarLong::toBytes(int value) {
-    return VarNumber::toBytes(value, VarLong::maxBits);
+VarLong VarLong::fromBytes(const std::vector<unsigned char>& byteArr) {
+    if (byteArr.empty()) throw std::out_of_range("VarLong::fromBytes received an empty array");
+    return VarLong{VarNumber::fromBytes(byteArr, VarLong::maxBits)};
 }
 
-int VarLong::fromBytes(std::vector<unsigned char> byteArr) {
-    if (byteArr.empty()) throw std::out_of_range("VarLong::fromBytes received an empty array");
-    return VarNumber::fromBytes(byteArr, VarLong::maxBits);
+std::vector<unsigned char> VarLong::bytes() const {
+    return VarNumber::toBytes(value, VarLong::maxBits);
 }
